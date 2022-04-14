@@ -2,12 +2,16 @@ import React, { useEffect, useState } from 'react';
 import web3 from '../ethereum/web3';
 import store from '../store/index';
 import {useSelector, useDispatch} from 'react-redux';
+import Factory from '../ethereum/factory';
+import { useNavigate } from "react-router-dom";
+import Identity from '../ethereum/identity';
 
 function Main() {
     const address = useSelector(state => state.userReducer.address);
     const user  = useSelector(state => state.userReducer);
 
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     function handleAccountsChanged(accounts){
         console.log("account changed");
         dispatch(
@@ -29,6 +33,7 @@ function Main() {
             alert("Metamask is not installed");
         }
         const accounts = await web3.eth.getAccounts();
+        const acc = accounts[0];
         if(accounts.length === 0){
             console.log("metamask locked")
             return;
@@ -37,12 +42,41 @@ function Main() {
             {
                 type:"SET_ADDRESS",
                 payload:{
-                    "address": accounts[0]
+                    "address": acc
                 }
             }
         );
         window.ethereum.on('accountsChanged', handleAccountsChanged);
-    
+        const contractAddr = await Factory.methods.getUserContractAddress().call({from:acc});
+        console.log(contractAddr);
+        if(contractAddr=="0x0000000000000000000000000000000000000000")
+        {
+            navigate('/signup');
+        }
+        else{
+            const identity = Identity(contractAddr);
+            identity.methods.getDetails().call().then((details) => {
+                if (details[1] !== '') {
+                    dispatch(
+                    {
+                        type:"SET_CONTRACT",
+                        payload:{
+                            "ipfsHash": details[1]
+                        }
+                    }
+                    );
+                }
+            });
+            dispatch(
+                {
+                    type:"SET_CONTRACT",
+                    payload:{
+                        "address": contractAddr
+                    }
+                }
+            );
+            navigate('/home');
+        }
     }
 
     useEffect(

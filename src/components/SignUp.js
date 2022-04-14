@@ -13,16 +13,77 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import ImageUpload from './ImageUpload';
+import Factory from '../ethereum/factory';
+import Identity from '../ethereum/identity';
+import { useDispatch, useSelector } from 'react-redux';
+import {create} from 'ipfs-http-client';
+import { useNavigate } from 'react-router-dom';
+
+const client = create('https://ipfs.infura.io:5001/api/v0');
 
 const theme = createTheme();
 
 export default function SignUp() {
-  const handleSubmit = (event) => {
+  const address = useSelector(state => state.userReducer.address);
+  console.log(address);  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('username')
-    });
+    
+    const username = data.get('username');
+    console.log({"username":username});
+
+    try{
+      await Factory.methods.createUser().send({
+        from: address,
+      });
+      const contractAddr = await Factory.methods.getUserContractAddress().call({from:address});
+      console.log(contractAddr);
+      dispatch(
+        {
+            type:"SET_CONTRACT",
+            payload:{
+                "address": contractAddr
+            }
+        }
+      );
+      const identity = Identity(contractAddr);
+          
+      console.log('Adding the username to the ipfs');
+      // add the username to to IPFS 
+      let cid;
+      const pushdata = { 'name': username }
+      cid = await client.add(Buffer.from(JSON.stringify(pushdata)));
+      const url =  `https://ipfs.infura.io/ipfs/${cid.path}`;
+      console.log(url);
+
+      // add ipfs hash to contract
+      console.log(cid.path);
+      // setLoadingCreateipfshash(true);
+      identity.methods.setIPFSHash(cid.path).send({
+        from: address
+      }).then(() => {
+        identity.methods.getDetails().call().then((details) => {
+          if (details[1] !== '') {
+            dispatch(
+              {
+                  type:"SET_CONTRACT",
+                  payload:{
+                      "ipfsHash": details[1]
+                  }
+              }
+            );
+          }
+        })
+      });
+      navigate('/home');
+    }
+    catch(e){
+      alert("Error: "+ e);
+    }
   };
 
   return (

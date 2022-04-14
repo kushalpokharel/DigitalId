@@ -3,7 +3,9 @@ import React from 'react';
 const initialState={
     username : "",
     address : "",
-    image : ""
+    image : "",
+    contractAddr:"",
+    ipfsHash:"",
 }
 
 export const userReducer = (state=initialState, action) => {
@@ -27,11 +29,16 @@ export const userReducer = (state=initialState, action) => {
                 
             }
         case "SET_ADDRESS":
-            
             return {
                 ...state,
                 address:payload.address
                 
+            }
+        
+        case "SET_CONTRACT":
+            return{
+                ...state,
+                contractAddr:payload.address
             }
 
         case "REMOVE_USER":
