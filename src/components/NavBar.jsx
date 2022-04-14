@@ -15,13 +15,17 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
 import ProfileIcon from '@mui/icons-material/AccountBox';
 import DocumentAddIcon from '@mui/icons-material/PostAdd';
 import ApprovedIcon from '@mui/icons-material/AssignmentTurnedIn';
 import MailIcon from '@mui/icons-material/Mail';
 import ScanIcon from '@mui/icons-material/DocumentScanner';
-import SignUp from './SignUp';
+import { useDispatch } from 'react-redux';
+import Profile from './Profile';
+import Web3 from '../ethereum/web3';
+import Factory from '../ethereum/factory';
+import Identity from '../ethereum/identity';
+import AddAttributes from './AddAtrributes';
 
 const drawerWidth = 240;
 
@@ -96,6 +100,7 @@ export default function MiniDrawer() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
+  const dispatch = useDispatch();
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -103,6 +108,36 @@ export default function MiniDrawer() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+
+  const instantiate = async() =>{
+    const accounts = await Web3.eth.getAccounts();
+    const acc = accounts[0];
+  
+    const contractAddr = await Factory.methods.getUserContractAddress().call({from:acc});
+    const identity = Identity(contractAddr);
+    identity.methods.getDetails().call().then((details) => {
+        console.log(details);
+        if (details[1] !== '') {
+            dispatch(
+            {
+                type:"SET_IPFS",
+                payload:{
+                    "ipfsHash": details[1]
+                }
+            });
+        }
+    });
+    dispatch(
+    {
+        type:"SET_CONTRACT",
+        payload:{
+            "address": contractAddr
+        }
+    });
+
+  }
+
+  React.useEffect(()=>instantiate)
 
   return (
     <>
@@ -191,7 +226,7 @@ export default function MiniDrawer() {
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
-        {index==0?<h1>Your profile page</h1>:index==1?<h1>Your requested doc page</h1>:index==2?<h1>Your accepted doc page</h1>:<h1>Your IPFS page</h1>}
+        {index==0?<Profile/>:index==1?<AddAttributes/>:index==2?<h1>Your accepted doc page</h1>:<h1>Your IPFS page</h1>}
       </Box>
     </Box>
     

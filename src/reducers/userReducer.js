@@ -41,6 +41,12 @@ export const userReducer = (state=initialState, action) => {
                 contractAddr:payload.address
             }
 
+        case "SET_IPFS":
+            return{
+                ...state,
+                ipfsHash:payload.ipfsHash
+            }
+
         case "REMOVE_USER":
             return initialState;
             

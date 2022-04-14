@@ -48,33 +48,12 @@ function Main() {
         );
         window.ethereum.on('accountsChanged', handleAccountsChanged);
         const contractAddr = await Factory.methods.getUserContractAddress().call({from:acc});
-        console.log(contractAddr);
         if(contractAddr=="0x0000000000000000000000000000000000000000")
         {
             navigate('/signup');
         }
         else{
-            const identity = Identity(contractAddr);
-            identity.methods.getDetails().call().then((details) => {
-                if (details[1] !== '') {
-                    dispatch(
-                    {
-                        type:"SET_CONTRACT",
-                        payload:{
-                            "ipfsHash": details[1]
-                        }
-                    }
-                    );
-                }
-            });
-            dispatch(
-                {
-                    type:"SET_CONTRACT",
-                    payload:{
-                        "address": contractAddr
-                    }
-                }
-            );
+            
             navigate('/home');
         }
     }
