@@ -1,0 +1,30 @@
+.page {
+  /* height: 100vh; */
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.container {
+  height: 300px;
+  width: 300px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.img-holder {
+  margin: auto;
+  width: 150px;
+  height: 150px;
+  /* border: 3px black solid; */
+  border-radius: 50%;
+  margin-top: 1rem;
+}
+.img {
+  width: 150px;
+  height: 150px;
+  object-fit: fill;
+  border-radius: 50%;
+}
+#input[type="file"] {
+  display: none;
+}
