@@ -34,6 +34,7 @@ function Main() {
         }
         const accounts = await web3.eth.getAccounts();
         const acc = accounts[0];
+        window.ethereum.on('accountsChanged', handleAccountsChanged);
         if(accounts.length === 0){
             console.log("metamask locked")
             return;
@@ -46,7 +47,7 @@ function Main() {
                 }
             }
         );
-        window.ethereum.on('accountsChanged', handleAccountsChanged);
+        
         const contractAddr = await Factory.methods.getUserContractAddress().call({from:acc});
         if(contractAddr=="0x0000000000000000000000000000000000000000")
         {
@@ -63,8 +64,8 @@ function Main() {
         []);
 
     // useEffect(()=>{
-    //         console.log("user address changed");
-            
+    //         console.log("user changed");
+    //         
     //     },
     //     [address]);
     

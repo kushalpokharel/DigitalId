@@ -26,6 +26,7 @@ import Web3 from '../ethereum/web3';
 import Factory from '../ethereum/factory';
 import Identity from '../ethereum/identity';
 import AddAttributes from './AddAtrributes';
+import { userReducer } from '../reducers/userReducer';
 
 const drawerWidth = 240;
 
@@ -115,26 +116,68 @@ export default function MiniDrawer() {
   
     const contractAddr = await Factory.methods.getUserContractAddress().call({from:acc});
     const identity = Identity(contractAddr);
-    identity.methods.getDetails().call().then((details) => {
-        console.log(details);
-        if (details[1] !== '') {
-            dispatch(
-            {
-                type:"SET_IPFS",
-                payload:{
-                    "ipfsHash": details[1]
-                }
-            });
-        }
+    const details = await identity.methods.getDetails().call();
+    const ipfshash = details[1];
+    if (ipfshash !== '') {
+        dispatch(
+        {
+            type:"SET_IPFS",
+            payload:{
+                "ipfsHash": ipfshash
+            }
+        });
+    }
+
+    dispatch(
+      {
+          type:"SET_CONTRACT",
+          payload:{
+              "address": contractAddr
+          }
+      });
+    const url = `https://ipfs.infura.io/ipfs/${ipfshash}`;
+    // console.log(url);
+    const response = await fetch(url)
+    const data = await response.json();
+    // console.log("data"+data);
+    Object.keys(data).forEach(key=>{
+      console.log(data[key]+ data.name);
     });
     dispatch(
     {
-        type:"SET_CONTRACT",
+        type:"SET_USERNAME",
         payload:{
-            "address": contractAddr
+            "username": data.name
         }
     });
-
+    dispatch(
+      {
+        type:"SET_CITIZENSHIP",
+        payload:{
+        "Full Name" : data.fullname===undefined?"Not Defined":data.fullname,
+        "Address" : data.address===undefined?"Not Defined":data.address,
+        "DOB" : data.dob===undefined?"Not Defined":data.dob,
+        "Father's Name": data.fatherName===undefined?"Not Defined":data.fatherName,
+        "Mother's Name" : data.motherName===undefined?"Not Defined":data.motherName,
+        "Citizenship Number" : data.citizenshipNumber===undefined?"Not Defined":data.citizenshipNumber,
+        "Date Of Registration" : data.dateOfRegistration===undefined?"Not Defined":data.dateOfRegistration
+        }
+      }
+    );
+    dispatch(
+      {
+        type:"SET_LICENSE",
+        payload:{
+        "Full Name" : data.fullname===undefined?"Not Defined":data.fullname,
+        "Address" : data.address===undefined?"Not Defined":data.address,
+        "DOB" : data.dob===undefined?"Not Defined":data.dob,
+        "Father's Name": data.fatherName===undefined?"Not Defined":data.fatherName,
+        "Mother's Name" : data.motherName===undefined?"Not Defined":data.motherName,
+        "License Number" : data.licenseNumber===undefined?"Not Defined":data.licenseNumber,
+        "Date Of Registration" : data.dateOfRegistration===undefined?"Not Defined":data.dateOfRegistration
+        }
+      }
+    );
   }
 
   React.useEffect(()=>instantiate)
