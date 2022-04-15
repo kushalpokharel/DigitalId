@@ -144,7 +144,7 @@ export default function Profile(){
                     return (
                         <Grid container justifyContent="space-between">
                             <Grid item>
-                                <Grid container spacing={5}>
+                                <Grid container alignItems='center' spacing={5}>
                                     <Grid item xs={1} >
                                     <Checkbox
                                                 checked={checkState[index]||false}
