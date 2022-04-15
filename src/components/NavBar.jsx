@@ -118,6 +118,7 @@ export default function MiniDrawer() {
     const identity = Identity(contractAddr);
     const details = await identity.methods.getDetails().call();
     const ipfshash = details[1];
+    console.log(ipfshash);
     if (ipfshash !== '') {
         dispatch(
         {
@@ -141,7 +142,7 @@ export default function MiniDrawer() {
     const data = await response.json();
     // console.log("data"+data);
     Object.keys(data).forEach(key=>{
-      console.log(data[key]+ data.name);
+      console.log(data[key]+ data.name[0]);
     });
     dispatch(
     {
@@ -213,7 +214,7 @@ export default function MiniDrawer() {
         </DrawerHeader>
         <Divider />
         <List>
-          {['Profile', 'Add documents', 'Approved Documents', 'Your documents'].map((text, ind) => ind==index?(
+          {['Profile', 'Add documents', 'Pending Documents', 'Approved documents'].map((text, ind) => ind==index?(
             
             <ListItemButton
               selected
@@ -233,7 +234,7 @@ export default function MiniDrawer() {
                   justifyContent: 'center',
                 }}
               >
-                {ind === 0 ? <ProfileIcon /> : ind==1? <DocumentAddIcon />: ind==2?<ApprovedIcon/>:ind==3?<ScanIcon/>:<MailIcon/>}
+                {ind === 0 ? <ProfileIcon /> : ind==1? <DocumentAddIcon />: ind==2?<ScanIcon/>:ind==3?<ApprovedIcon/>:<MailIcon/>}
               </ListItemIcon>
               <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
             </ListItemButton>
@@ -258,7 +259,7 @@ export default function MiniDrawer() {
                   justifyContent: 'center',
                 }}
               >
-                {ind === 0 ? <ProfileIcon /> : ind==1? <DocumentAddIcon />: ind==2?<ApprovedIcon/>:ind==3?<ScanIcon/>:<MailIcon/>}
+                {ind === 0 ? <ProfileIcon /> : ind==1? <DocumentAddIcon />: ind==2?<ScanIcon/>:ind==3?<ApprovedIcon/>:<MailIcon/>}
               </ListItemIcon>
               <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
             </ListItemButton>
@@ -269,7 +270,7 @@ export default function MiniDrawer() {
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
-        {index==0?<Profile/>:index==1?<AddAttributes/>:index==2?<h1>Your accepted doc page</h1>:<h1>Your IPFS page</h1>}
+        {index==0?<Profile/>:index==1?<AddAttributes/>:index==2?<h1>Your pending doc page</h1>:<h1>Your approved page</h1>}
       </Box>
     </Box>
     
