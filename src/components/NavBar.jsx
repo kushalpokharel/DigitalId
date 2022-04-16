@@ -159,7 +159,7 @@ export default function MiniDrawer() {
     {
         type:"SET_USERNAME",
         payload:{
-            "username": datae.name===undefined?"Anonymous":datae.name
+            "username": datae.name===undefined?"Kushal":datae.name
         }
     });
     dispatch(

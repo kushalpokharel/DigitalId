@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import db from './firebase/firebase';
 import identity from '../ethereum/identity';
-import {doc, collection, getDoc, where, query } from 'firebase/firestore';
+import {doc, collection, getDoc, where, query, deleteDoc } from 'firebase/firestore';
 import {create} from 'ipfs-http-client';
 const client = create('https://ipfs.infura.io:5001/api/v0');
 
@@ -42,7 +42,7 @@ function Status(){
             const docref = docref1.data();
             const accref = accref1.data();
 
-            if(docref===undefined && accref==undefined){
+        if(docref===undefined && accref==undefined){
             dispatch(
                 {
                 type:"SET_CITIZENSHIP_STATUS",
@@ -107,13 +107,15 @@ function Status(){
     const handleCitizen = async() =>{
         console.log(citizenStatus);
         if(citizenStatus.status === "APPROVED"){
+          try{
             setLoading(true);
             console.log(acc);
             if(acc!=""){
                 const docRef = doc(db, "accepted", acc);
                 const querySnapshot = await getDoc(docRef);
                 const snapshot = querySnapshot.data();
-
+                const data =snapshot;
+                await deleteDoc(docRef);
                 console.log(acc);
                 const id = identity(idAddr);
                 // id.setIpfsHash(hash);
@@ -128,11 +130,38 @@ function Status(){
                 });
                 const newUrl = await id.methods.getDetails().call();
                 console.log(newUrl);
+
+                dispatch(
+                  {
+                    type:"SET_CITIZENSHIP",
+                    payload:{
+                    "Full Name" : data.fullName===undefined?"Not Defined":[...data.fullName],
+                    "Address" : data.permanentAddress===undefined?"Not Defined":[...data.permanentAddress],
+                    "DOB" : data.birthDate===undefined?"Not Defined":[...data.birthDate],
+                    "Father's Name": data.fatherName===undefined?"Not Defined":[...data.fatherName],
+                    "Mother's Name" : data.motherName===undefined?"Not Defined":[...data.motherName],
+                    "Citizenship Number" : data.citizenshipNumber===undefined?"Not Defined":[...data.citizenshipNumber],
+                    "Date Of Registration" : data.issuedDate===undefined?"Not Defined":[...data.issuedDate]
+                    }
+                  }
+                );
+                dispatch(
+                  {
+                    type:"SET_CITIZENSHIP_STATUS",
+                    payload:{
+                      "status":"PUSHED"
+                    }
+                  }
+                );
                 // delete document
                 // const docRef = doc(db,"accepted", addr);
                 // await deleteDoc(docRef);
                 setLoading(false);
             }
+          }
+          catch(e){
+            console.log("Error " + e);
+          }
         }
     }
     useEffect(()=>{
