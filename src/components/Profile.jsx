@@ -133,7 +133,7 @@ export default function Profile(){
                             </Grid>
 
                             <Grid item >
-                                <Typography variant="body2">{citizenship[key]}</Typography>
+                                <Typography variant="body2">{citizenship[key][1]}</Typography>
                             </Grid>
                             
                         </Grid>
@@ -160,7 +160,7 @@ export default function Profile(){
                             </Grid>
 
                             <Grid item justifyContent='center' alignContent='center' align='center'>
-                                <Typography variant="body2">{license[key]}</Typography>
+                                <Typography variant="body2">{license[key][1]}</Typography>
                             </Grid>
                             
                         </Grid>

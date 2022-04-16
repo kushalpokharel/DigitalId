@@ -27,6 +27,9 @@ import Factory from '../ethereum/factory';
 import Identity from '../ethereum/identity';
 import AddAttributes from './AddAtrributes';
 import { userReducer } from '../reducers/userReducer';
+import db from './firebase/firebase';
+import Status from './Status';
+import {doc, collection, getDoc, where, query } from 'firebase/firestore';
 
 const drawerWidth = 240;
 
@@ -113,6 +116,13 @@ export default function MiniDrawer() {
   const instantiate = async() =>{
     const accounts = await Web3.eth.getAccounts();
     const acc = accounts[0];
+
+    dispatch({
+      type:"SET_ADDRESS",
+      payload:{
+        "address":acc
+      }
+    })
   
     const contractAddr = await Factory.methods.getUserContractAddress().call({from:acc});
     const identity = Identity(contractAddr);
@@ -139,29 +149,30 @@ export default function MiniDrawer() {
     const url = `https://ipfs.infura.io/ipfs/${ipfshash}`;
     // console.log(url);
     const response = await fetch(url)
-    const data = await response.json();
+    const datae = await response.json();
     // console.log("data"+data);
-    Object.keys(data).forEach(key=>{
-      console.log(data[key]+ data.name[0]);
-    });
+    // Object.keys(data).forEach(key=>{
+    //   console.log(data[key]+ data.name[0]);
+    // });
+    const data = await datae.citizenship;
     dispatch(
     {
         type:"SET_USERNAME",
         payload:{
-            "username": data.name
+            "username": datae.name===undefined?"Anonymous":datae.name
         }
     });
     dispatch(
       {
         type:"SET_CITIZENSHIP",
         payload:{
-        "Full Name" : data.fullname===undefined?"Not Defined":data.fullname,
-        "Address" : data.address===undefined?"Not Defined":data.address,
-        "DOB" : data.dob===undefined?"Not Defined":data.dob,
-        "Father's Name": data.fatherName===undefined?"Not Defined":data.fatherName,
-        "Mother's Name" : data.motherName===undefined?"Not Defined":data.motherName,
-        "Citizenship Number" : data.citizenshipNumber===undefined?"Not Defined":data.citizenshipNumber,
-        "Date Of Registration" : data.dateOfRegistration===undefined?"Not Defined":data.dateOfRegistration
+        "Full Name" : data.fullName===undefined?"Not Defined":[...data.fullName],
+        "Address" : data.permanentAddress===undefined?"Not Defined":[...data.permanentAddress],
+        "DOB" : data.birthDate===undefined?"Not Defined":[...data.birthDate],
+        "Father's Name": data.fatherName===undefined?"Not Defined":[...data.fatherName],
+        "Mother's Name" : data.motherName===undefined?"Not Defined":[...data.motherName],
+        "Citizenship Number" : data.citizenshipNumber===undefined?"Not Defined":[...data.citizenshipNumber],
+        "Date Of Registration" : data.issuedDate===undefined?"Not Defined":[...data.issuedDate]
         }
       }
     );
@@ -169,16 +180,109 @@ export default function MiniDrawer() {
       {
         type:"SET_LICENSE",
         payload:{
-        "Full Name" : data.fullname===undefined?"Not Defined":data.fullname,
-        "Address" : data.address===undefined?"Not Defined":data.address,
-        "DOB" : data.dob===undefined?"Not Defined":data.dob,
-        "Father's Name": data.fatherName===undefined?"Not Defined":data.fatherName,
-        "Mother's Name" : data.motherName===undefined?"Not Defined":data.motherName,
+        "Full Name" : data.licensefullname===undefined?"Not Defined":data.licensefullname,
+        "Address" : data.licenseaddress===undefined?"Not Defined":data.licenseaddress,
+        "DOB" : data.licensedob===undefined?"Not Defined":data.licensedob,
+        "Father's Name": data.licensefatherName===undefined?"Not Defined":data.licensefatherName,
+        "Mother's Name" : data.licensemotherName===undefined?"Not Defined":data.licensemotherName,
         "License Number" : data.licenseNumber===undefined?"Not Defined":data.licenseNumber,
-        "Date Of Registration" : data.dateOfRegistration===undefined?"Not Defined":data.dateOfRegistration
+        "Date Of Registration" : data.licensedateOfRegistration===undefined?"Not Defined":data.licensedateOfRegistration
         }
       }
     );
+    if(data.fullname!==undefined){
+      dispatch(
+        {
+          type:"SET_CITIZENSHIP_STATUS",
+          payload:{
+            "status":"PUSHED"
+          }
+        }
+      );
+    }
+    if(data.licensefullname!==undefined){
+      dispatch(
+        {
+          type:"SET_LICENSE_STATUS",
+          payload:{
+            "status":"PUSHED"
+          }
+        }
+      );
+    }
+      console.log(acc);
+      const accRefs = doc(db, "accepted", acc);
+      const docRefs = doc(db, "request", acc);
+      
+      const docref1 = await getDoc(docRefs);
+      const accref1 = await getDoc(accRefs);
+      
+      const docref = docref1.data();
+      const accref = accref1.data();
+      
+      if(docref===undefined && accref==undefined){
+        dispatch(
+          {
+            type:"SET_CITIZENSHIP_STATUS",
+            payload:{
+              "status":"NOT_REQUESTED"
+            }
+          }
+        );
+        dispatch(
+          {
+            type:"SET_LICENSE_STATUS",
+            payload:{
+              "status":"NOT_REQUESTED"
+            }
+          }
+        );
+      }
+
+      if(docref!==undefined && docref.citizenship){
+        dispatch(
+          {
+            type:"SET_CITIZENSHIP_STATUS",
+            payload:{
+              "status":"REQUESTED"
+            }
+          }
+        );
+      }
+      else if(accref!==undefined && accref.citizenship){
+        dispatch(
+          {
+            type:"SET_CITIZENSHIP_STATUS",
+            payload:{
+              "status":"APPROVED"
+            }
+          }
+        );
+      }
+      if(docref!==undefined && docref.license){
+        dispatch(
+          {
+            type:"SET_LICENSE_STATUS",
+            payload:{
+              "status":"PUSHED"
+            }
+          }
+        );
+      }
+      else if(accref!==undefined && accref.license){
+        dispatch(
+          {
+            type:"SET_LICENSE_STATUS",
+            payload:{
+              "status":"APPROVED"
+            }
+          }
+        );
+      }
+      
+  
+    
+
   }
 
   React.useEffect(()=>instantiate)
@@ -214,7 +318,7 @@ export default function MiniDrawer() {
         </DrawerHeader>
         <Divider />
         <List>
-          {['Profile', 'Add documents', 'Pending Documents', 'Approved documents'].map((text, ind) => ind==index?(
+          {['Profile', 'Add documents', 'Document status', 'Approved documents'].map((text, ind) => ind==index?(
             
             <ListItemButton
               selected
@@ -270,7 +374,7 @@ export default function MiniDrawer() {
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
-        {index==0?<Profile/>:index==1?<AddAttributes/>:index==2?<h1>Your pending doc page</h1>:<h1>Your approved page</h1>}
+        {index==0?<Profile/>:index==1?<AddAttributes/>:index==2?<Status/>:<h1>Your approved page</h1>}
       </Box>
     </Box>
     

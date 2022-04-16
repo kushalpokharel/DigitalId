@@ -70,7 +70,7 @@ export default function SignUp() {
           if (details[1] !== '') {
             dispatch(
               {
-                  type:"SET_CONTRACT",
+                  type:"SET_IPFS",
                   payload:{
                       "ipfsHash": details[1]
                   }
