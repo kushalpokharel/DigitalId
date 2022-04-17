@@ -14,8 +14,14 @@ import {
   Divider,
   Grid,
   TextField,
-  Button
+  Button,
+  MenuItem,
 } from '@mui/material';
+import {
+  LocalizationProvider, 
+  DatePicker,
+} from '@mui/lab';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
 
 const theme = createTheme();
 
@@ -88,6 +94,7 @@ const AddAttributes = () => {
             }),
             gender: Yup.string()
               .required('Gender is required'),
+              // .matches('Not Selected', "Gender is required"),
             birthPlace: Yup.object().shape({
               provinceno: Yup.number()
                 .required('Province number is required')
@@ -135,10 +142,10 @@ const AddAttributes = () => {
                 .max(30, 'Invalid Ward number'),
             }),
             issuedDate: Yup.string()
-              .required('BirthDate is required'),
+              .required('Citizenship IssuedDate is required'),
             })}
 
-          onSubmit = {async (values) => {
+          onSubmit = {async (values, {resetForm}, {setFieldValue}) => {
             console.log(values);
            
             try {
@@ -147,6 +154,9 @@ const AddAttributes = () => {
             } catch (e) {
               console.error("Error adding document: ", e);
             }
+            alert('Your request has been submitted.')
+            // setFieldValue('birthDate', '');
+            resetForm();
           }}>
             {({
             errors,
@@ -157,7 +167,8 @@ const AddAttributes = () => {
             isValid,
             dirty,
             touched,
-            values
+            values,
+            setFieldValue
           }) => (
           <form autoComplete="off" noValidate onSubmit={handleSubmit}>
               <CardContent>
@@ -237,21 +248,25 @@ const AddAttributes = () => {
                     size="small"
                     />
                   </Grid>
+
                   <Grid item md={6} xs={12}>
-                    <TextField
-                    error={Boolean(touched.gender && errors.gender)}
-                    fullWidth
-                    required
-                    helperText={touched.gender && errors.gender}
-                    label="Gender"
-                    name="gender"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    type="text"
-                    value={values.gender}
-                    variant="outlined"
-                    size="small"
-                    />
+                      <TextField 
+                        fullWidth
+                        size="small"
+                        required
+                        select
+                        label="Gender"
+                        name="gender"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        error={Boolean(touched.gender && errors.gender)}
+                        helperText={touched.gender && errors.gender}
+                        value={values.gender}
+                      >
+                        <MenuItem value={'Male'}>Male</MenuItem>
+                        <MenuItem value={'Female'}>Female</MenuItem>
+                        <MenuItem value={'Other'}>Other</MenuItem>
+                      </TextField>
                   </Grid>
                   
                   <Grid item md={2} xs={12}>
@@ -266,7 +281,7 @@ const AddAttributes = () => {
                     getIn(touched, 'birthPlace.provinceno') &&
                     getIn(errors, 'birthPlace.provinceno')
                     }
-                    label="ProvinceNumber"
+                    label="BirthPlace ProvinceNumber"
                     name="birthPlace.provinceno"
                     onBlur={handleBlur}
                     onChange={handleChange}
@@ -288,7 +303,7 @@ const AddAttributes = () => {
                     getIn(touched, 'birthPlace.district') &&
                     getIn(errors, 'birthPlace.district')
                     }
-                    label="District"
+                    label="BirthPlace District"
                     name="birthPlace.district"
                     onBlur={handleBlur}
                     onChange={handleChange}
@@ -310,7 +325,7 @@ const AddAttributes = () => {
                     getIn(touched, 'birthPlace.vdcMunicipality') &&
                     getIn(errors, 'birthPlace.vdcMunicipality')
                     }
-                    label="VDC/Municipality"
+                    label="BirthPlace VDC/Municipality"
                     name="birthPlace.vdcMunicipality"
                     onBlur={handleBlur}
                     onChange={handleChange}
@@ -332,7 +347,7 @@ const AddAttributes = () => {
                     getIn(touched, 'birthPlace.wardno') &&
                     getIn(errors, 'birthPlace.wardno')
                     }
-                    label="WardNumber"
+                    label="BirthPlace WardNumber"
                     name="birthPlace.wardno"
                     onBlur={handleBlur}
                     onChange={handleChange}
@@ -344,20 +359,30 @@ const AddAttributes = () => {
                   </Grid>
 
                   <Grid item md={6} xs={12}>
-                    <TextField
-                    error={Boolean(touched.birthDate && errors.birthDate)}
-                    fullWidth
-                    required
-                    helperText={touched.birthDate && errors.birthDate}
-                    label="BirthDate"
-                    name="birthDate"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    type="text"
-                    value={values.birthDate}
-                    variant="outlined"
-                    size="small"
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        inputVariant="outlined"
+                        id="birth-date-picker"
+                        label="Date of Birth"
+                        fullWidth
+                        name="birthDate"
+                        onChange={(val) => {
+                          console.log(val);
+                          setFieldValue("birthDate", val);
+                        }}
+                        onBlur={handleBlur}
+                        value={values.birthDate}
+                        format="DD/MM/YYYY"
+                        error={errors.birthDate && touched.birthDate}
+                        helperText={errors.birthDate && touched.birthDate}
+                        renderInput={
+                          (params) => 
+                          <TextField 
+                            {...params}
+                          />
+                        }
+                      />
+                    </LocalizationProvider>
                   </Grid>
                   <Grid item md={6} xs={12}>
                     <TextField

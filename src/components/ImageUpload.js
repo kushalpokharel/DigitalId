@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-// import ProfileImage from './../assets/images/profile.jpg';
 import './../css/ImageUpload.css';
 import { PhotoCamera } from '@mui/icons-material';
 
@@ -31,9 +30,9 @@ function ImageUpload() {
                 id="input"
                 onChange={imageHandler}
             />
-            <div>
-                <label htmlFor="input">
-                    <PhotoCamera/>
+            <div className='label'> 
+                <label className='image-upload' htmlFor="input">
+                    <PhotoCamera />
                 </label>
             </div>
             </div>
