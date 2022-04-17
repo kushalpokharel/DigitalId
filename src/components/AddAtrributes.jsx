@@ -94,7 +94,6 @@ const AddAttributes = () => {
             }),
             gender: Yup.string()
               .required('Gender is required'),
-              // .matches('Not Selected', "Gender is required"),
             birthPlace: Yup.object().shape({
               provinceno: Yup.number()
                 .required('Province number is required')
@@ -385,20 +384,30 @@ const AddAttributes = () => {
                     </LocalizationProvider>
                   </Grid>
                   <Grid item md={6} xs={12}>
-                    <TextField
-                    error={Boolean(touched.issuedDate && errors.issuedDate)}
-                    fullWidth
-                    required
-                    helperText={touched.issuedDate && errors.issuedDate}
-                    label="IssuedDate"
-                    name="issuedDate"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    type="text"
-                    value={values.issuedDate}
-                    variant="outlined"
-                    size="small"
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DatePicker
+                        inputVariant="outlined"
+                        id="issued-date-picker"
+                        label="Issued Date"
+                        fullWidth
+                        name="issuedDate"
+                        onChange={(val) => {
+                          console.log(val);
+                          setFieldValue("issuedDate", val);
+                        }}
+                        onBlur={handleBlur}
+                        value={values.issuedDate}
+                        format="DD/MM/YYYY"
+                        error={errors.issuedDate && touched.issuedDate}
+                        helperText={errors.issuedDate && touched.issuedDate}
+                        renderInput={
+                          (params) => 
+                          <TextField 
+                            {...params}
+                          />
+                        }
+                      />
+                    </LocalizationProvider>
                   </Grid>
 
                   <Grid item md={4} xs={12}>
